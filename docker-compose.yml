@@ -1,0 +1,111 @@
+name: q-lab-ai-pentest-operations
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_started
+    networks: [edge, app]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: artifacts/acme-desk/Dockerfile
+    environment:
+      - PORT=4173
+      - BASE_PATH=/
+    expose: ["80"]
+    networks: [app]
+
+  backend:
+    build:
+      context: .
+      dockerfile: artifacts/api-server/Dockerfile
+    environment:
+      - PORT=5000
+      - LAB_MODE=${LAB_MODE:-vulnerable}
+      - DEBUG_LAB=${DEBUG_LAB:-false}
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-phi3:mini}
+    expose: ["5000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks: [app, data]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-qlab}
+      POSTGRES_USER: ${POSTGRES_USER:-qlab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qlab-lab-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [data]
+
+  qdrant:
+    image: qdrant/qdrant:v1.13.6
+    expose: ["6333"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:6333/readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [data]
+
+  ollama:
+    image: ollama/ollama:0.11.11
+    expose: ["11434"]
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [data]
+
+  internal-service:
+    build:
+      context: ./internal-service
+    expose: ["8081"]
+    networks: [internal]
+
+  mcp-server:
+    build:
+      context: ./mcp-server
+    environment:
+      - INTERNAL_SERVICE_URL=http://internal-service:8081
+    expose: ["8090"]
+    depends_on:
+      internal-service:
+        condition: service_started
+    networks: [internal, app]
+
+volumes:
+  postgres-data:
+  ollama-data:
+
+networks:
+  edge:
+  app:
+  data:
+    internal: true
+  internal:
+    internal: true

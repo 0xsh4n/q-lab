@@ -1,0 +1,537 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: "Q-Lab: AI Pentest Operations API — a Bond-inspired, unofficial training lab by Ajmal Shan (0xsh4n)."
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: auth
+  - name: dashboard
+  - name: users
+  - name: documents
+  - name: search
+  - name: chat
+  - name: agent
+  - name: tickets
+  - name: settings
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Get the current lab session
+      responses:
+        "200":
+          description: Session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in with a lab account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Invalid credentials
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End the current lab session
+      responses:
+        "204":
+          description: Logged out
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Dashboard overview
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users visible to the current organization
+      parameters:
+        - $ref: "#/components/parameters/SearchParam"
+      responses:
+        "200":
+          description: User list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user profile
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List knowledge documents
+      parameters:
+        - $ref: "#/components/parameters/SearchParam"
+      responses:
+        "200":
+          description: Document list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: createDocument
+      tags: [documents]
+      summary: Add a knowledge document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentInput"
+      responses:
+        "201":
+          description: Created document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+  /documents/{id}:
+    get:
+      operationId: getDocument
+      tags: [documents]
+      summary: Read a knowledge document
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Document not found
+  /search:
+    post:
+      operationId: searchKnowledge
+      tags: [search]
+      summary: Search the company knowledge base
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchInput"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchResult"
+  /chat:
+    post:
+      operationId: sendChat
+      tags: [chat]
+      summary: Ask the Q-Lab assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Assistant response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [chat]
+      summary: List recent conversations
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+  /agent/tools:
+    get:
+      operationId: listAgentTools
+      tags: [agent]
+      summary: List available assistant tools
+      responses:
+        "200":
+          description: Agent tools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentTool"
+  /agent/run:
+    post:
+      operationId: runAgent
+      tags: [agent]
+      summary: Run a support-agent workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentInput"
+      responses:
+        "200":
+          description: Agent result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentRun"
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [tickets]
+      summary: List support tickets
+      responses:
+        "200":
+          description: Tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+    post:
+      operationId: createTicket
+      tags: [tickets]
+      summary: Create a support ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketInput"
+      responses:
+        "201":
+          description: Created ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get workspace settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceSettings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update workspace settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceSettings"
+components:
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    SearchParam:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status, labMode, model]
+      properties:
+        status: { type: string }
+        labMode: { type: string }
+        model: { type: string }
+        services:
+          type: object
+          additionalProperties: { type: string }
+    Organization:
+      type: object
+      required: [id, name, plan, memberCount]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        plan: { type: string }
+        memberCount: { type: integer }
+    User:
+      type: object
+      required: [id, name, email, role, organization, status, initials]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string }
+        organization:
+          $ref: "#/components/schemas/Organization"
+        status: { type: string }
+        initials: { type: string }
+        lastActive: { type: string }
+    Session:
+      type: object
+      required: [user, organization, labMode]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        organization:
+          $ref: "#/components/schemas/Organization"
+        labMode: { type: string }
+        debugEnabled: { type: boolean }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, minLength: 3 }
+        password: { type: string, minLength: 1 }
+    Document:
+      type: object
+      required: [id, title, type, status, chunks, updatedAt, author, organization, preview]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        type: { type: string }
+        status: { type: string }
+        chunks: { type: integer }
+        updatedAt: { type: string }
+        author: { type: string }
+        organization: { type: string }
+        preview: { type: string }
+        sensitivity: { type: string }
+    DocumentInput:
+      type: object
+      required: [title, type, preview]
+      properties:
+        title: { type: string, minLength: 2 }
+        type: { type: string }
+        preview: { type: string, minLength: 2 }
+        sensitivity: { type: string }
+    SearchInput:
+      type: object
+      required: [query]
+      properties:
+        query: { type: string, minLength: 2 }
+        scope: { type: string }
+    SearchResult:
+      type: object
+      required: [id, title, excerpt, type, score, organization]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        excerpt: { type: string }
+        type: { type: string }
+        score: { type: number }
+        organization: { type: string }
+        matchedTerms:
+          type: array
+          items: { type: string }
+    ChatInput:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 1 }
+        conversationId: { type: ["integer", "null"] }
+    ChatResponse:
+      type: object
+      required: [id, answer, citations, model, safety]
+      properties:
+        id: { type: integer }
+        answer: { type: string }
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
+        model: { type: string }
+        safety: { type: string }
+    Citation:
+      type: object
+      required: [documentId, title, snippet]
+      properties:
+        documentId: { type: integer }
+        title: { type: string }
+        snippet: { type: string }
+    Conversation:
+      type: object
+      required: [id, title, updatedAt, messageCount]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        updatedAt: { type: string }
+        messageCount: { type: integer }
+    AgentTool:
+      type: object
+      required: [name, description, category, risk]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        risk: { type: string }
+    AgentInput:
+      type: object
+      required: [instruction]
+      properties:
+        instruction: { type: string, minLength: 1 }
+        requestedTool: { type: ["string", "null"] }
+    AgentRun:
+      type: object
+      required: [id, summary, steps, toolsUsed, status]
+      properties:
+        id: { type: integer }
+        summary: { type: string }
+        steps:
+          type: array
+          items: { type: string }
+        toolsUsed:
+          type: array
+          items: { type: string }
+        status: { type: string }
+        observation: { type: string }
+    Ticket:
+      type: object
+      required: [id, subject, status, priority, requester, updatedAt]
+      properties:
+        id: { type: integer }
+        subject: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        requester: { type: string }
+        updatedAt: { type: string }
+        assignee: { type: string }
+    TicketInput:
+      type: object
+      required: [subject, priority, description]
+      properties:
+        subject: { type: string, minLength: 3 }
+        priority: { type: string }
+        description: { type: string, minLength: 3 }
+    Dashboard:
+      type: object
+      required: [organization, metrics, activity, health]
+      properties:
+        organization:
+          $ref: "#/components/schemas/Organization"
+        metrics:
+          type: object
+          required: [documents, searches, openTickets, responseRate]
+          properties:
+            documents: { type: integer }
+            searches: { type: integer }
+            openTickets: { type: integer }
+            responseRate: { type: number }
+        activity:
+          type: array
+          items:
+            $ref: "#/components/schemas/Activity"
+        health:
+          $ref: "#/components/schemas/HealthStatus"
+    Activity:
+      type: object
+      required: [id, label, detail, timestamp, tone]
+      properties:
+        id: { type: integer }
+        label: { type: string }
+        detail: { type: string }
+        timestamp: { type: string }
+        tone: { type: string }
+    WorkspaceSettings:
+      type: object
+      required: [organizationName, labMode, debugEnabled, model, ragDocuments, mcpEnabled]
+      properties:
+        organizationName: { type: string }
+        labMode: { type: string }
+        debugEnabled: { type: boolean }
+        model: { type: string }
+        ragDocuments: { type: integer }
+        mcpEnabled: { type: boolean }
+    SettingsUpdate:
+      type: object
+      properties:
+        organizationName: { type: string }
+        labMode: { type: string }
+        debugEnabled: { type: boolean }
+        mcpEnabled: { type: boolean }
