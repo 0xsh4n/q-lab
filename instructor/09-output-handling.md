@@ -6,15 +6,15 @@
 
 **Target functionality:** Model output rendering.
 
-**Expected discovery path:** Trace response text from the API to the DOM and determine whether it is treated as text or trusted markup.
+**Expected discovery path:** In vulnerable mode, a prompt-injection message makes `/api/chat` return `format:"html"` with an `<img onerror=...>` payload; the Assistant page renders assistant HTML via `dangerouslySetInnerHTML`, so the payload executes in the browser.
 
-**Evidence:** Rendered text, DOM inspection, output handling code.
+**Evidence:** The `format:"html"` response body, the executed alert, and the rendering code path.
 
-**Expected impact:** In a real renderer, unsafe HTML could create stored or reflected script execution inside the lab.
+**Expected impact:** Stored/reflected XSS driven by model output — session-token theft from `localStorage`, request forgery, workspace takeover.
 
-**Remediation:** Render model output as text or sanitize with a strict allowlist; use a strong CSP.
+**Remediation:** Render model output as text by default; if rich text is required, sanitize with a strict allowlist and apply a strong CSP. Never trust model output as safe markup.
 
-**Instructor solution:** The lab keeps the payload synthetic and bounded; the lesson is to inspect the sink rather than assume model output is safe.
+**Instructor solution:** Secure mode returns text-only output and the UI uses no HTML sink; compare the two renders side by side.
 
 **OWASP mapping:** LLM05:2025 Improper Output Handling.
 

@@ -2,11 +2,11 @@
 
 **Objective:** Determine whether URL fetching can reach an internal service without becoming an internet pivot.
 
-**Prerequisites:** Use the agent/tool surface or send a direct request to `/api/tools/fetch-url`.
+**Prerequisites:** Use `/api/tools/fetch-url` (bounded demo), or the real fetch surfaces `POST /api/webhooks/test`, `POST /api/documents/import`, and the agent `http_get` tool.
 
-**Target functionality:** URL fetch simulation and the Docker-only internal service.
+**Target functionality:** Server-side URL fetching and the Docker-only `internal-service` (metadata relay at `/metadata`, internal admin panel at `/admin`).
 
-**Expected discovery path:** Test the synthetic internal hostname, then test a public destination and confirm it is rejected.
+**Expected discovery path:** Point a fetch at `http://internal-service:8081/admin` or `/metadata` to reach an internal-only surface; then confirm secure mode blocks internal/metadata destinations.
 
 **Evidence:** Both requests and response bodies.
 

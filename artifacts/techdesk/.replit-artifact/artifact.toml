@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "TechDesk AI — Support Intelligence Platform"
+description = "TechDesk AI is a multi-tenant, AI-powered customer-support and knowledge SaaS used as a realistic, intentionally vulnerable penetration-testing lab covering LLM/AI security, API security, and web security against deterministic synthetic data."
+version = "2.0.0"
+id = "artifacts/techdesk"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20296
+
+[services.development]
+run = "pnpm --filter @workspace/techdesk run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/techdesk", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/techdesk/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20296"
+BASE_PATH = "/"

@@ -1,21 +1,22 @@
 import { Router, type IRouter } from "express";
-import { HealthCheckResponse } from "@workspace/api-zod";
+import { settings, mode } from "../lib/store";
 
 const router: IRouter = Router();
 
 router.get("/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({
+  res.json({
     status: "ok",
-    labMode: process.env.LAB_MODE ?? "vulnerable",
-    model: process.env.OLLAMA_MODEL ?? "phi3:mini",
+    product: settings.productName,
+    labMode: mode(),
+    model: settings.model,
     services: {
       api: "ready",
       postgres: "synthetic-seed",
       qdrant: "synthetic-index",
       ollama: process.env.LLM_PROVIDER === "ollama" ? "configured" : "optional",
+      mcp: settings.mcpEnabled ? "ready" : "disabled",
     },
   });
-  res.json(data);
 });
 
 export default router;

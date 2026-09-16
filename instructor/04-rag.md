@@ -1,21 +1,19 @@
-# Scenario 04 — Cross-tenant RAG authorization
+# Scenario 04 — Cross-tenant RAG / vector retrieval
 
-**Objective:** Verify that retrieval applies organization scope before returning context.
+**Objective:** Verify that retrieval applies tenant scope before returning context.
 
-**Prerequisites:** Sign in as Alice and use Search.
+**Prerequisites:** Sign in as Alice (Northwind) and use Search, plus `POST /api/ai/embeddings/search`.
 
-**Target functionality:** `POST /api/search` and the document list.
+**Target functionality:** `POST /api/search` and `POST /api/ai/embeddings/search`.
 
-**Expected discovery path:** Search for terms that occur only in the Globex fixtures and inspect the returned organization.
+**Expected discovery path:** Search for terms that occur only in the Meridian fixtures (e.g. "patient MRN renewal") and inspect the returned `tenantId`/organization on the results.
 
-**Evidence:** Query, ranked results, source organization.
+**Evidence:** Query, ranked results, source tenant, leaked chunk content.
 
-**Expected impact:** Cross-tenant knowledge disclosure through a semantically authorized feature.
+**Expected impact:** Cross-tenant knowledge and PII disclosure through a semantically "authorized" feature (embedding recall over a shared index).
 
-**Remediation:** Apply tenant filtering before vector search or use tenant-partitioned collections.
+**Remediation:** Filter by tenant before vector search, or use tenant-partitioned collections; never search the global index and filter afterward.
 
-**Instructor solution:** Vulnerable mode permits matching Globex fixtures; secure mode scopes retrieval to Acme.
+**Instructor solution:** Vulnerable mode returns Meridian (tenant 2) neighbors to a Northwind (tenant 1) caller; secure mode scopes retrieval to the caller's tenant.
 
-**OWASP mapping:** LLM06:2025 Excessive Agency / API1:2023.
-
-**Suggested Udemy lecture:** Multi-tenant RAG authorization.
+**OWASP mapping:** LLM08:2025 Vector & Embedding Weaknesses / API1:2023.

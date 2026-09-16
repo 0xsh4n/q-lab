@@ -1,4 +1,4 @@
-name: q-lab-ai-pentest-operations
+name: techdesk-ai-pentest-lab
 
 services:
   nginx:
@@ -17,7 +17,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: artifacts/acme-desk/Dockerfile
+      dockerfile: artifacts/techdesk/Dockerfile
     environment:
       - PORT=4173
       - BASE_PATH=/
@@ -32,6 +32,7 @@ services:
       - PORT=5000
       - LAB_MODE=${LAB_MODE:-vulnerable}
       - DEBUG_LAB=${DEBUG_LAB:-false}
+      - JWT_SECRET=${JWT_SECRET:-techdesk-dev-secret}
       - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-phi3:mini}
@@ -46,9 +47,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-qlab}
-      POSTGRES_USER: ${POSTGRES_USER:-qlab}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qlab-lab-only}
+      POSTGRES_DB: ${POSTGRES_DB:-techdesk}
+      POSTGRES_USER: ${POSTGRES_USER:-techdesk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-techdesk-lab-only}
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
