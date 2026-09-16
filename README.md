@@ -93,7 +93,7 @@ These credentials must never be reused outside this local lab.
 ## Quick start with Docker
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/0xsh4n/q-lab
 cd techdesk-ai-pentest-lab
 cp .env.example .env
 ./scripts/setup.sh
